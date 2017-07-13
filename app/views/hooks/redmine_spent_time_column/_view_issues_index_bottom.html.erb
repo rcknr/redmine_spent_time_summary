@@ -1,0 +1,20 @@
+<%
+    if User.current.allowed_to?(:view_time_entries, @project)
+      if Redmine::VERSION::MAJOR == 3
+        estimated_points = Issue.where(:id => @query.issue_ids).collect(&:story_points).reject {|issue| issue.blank? }.sum ||0
+        spent_hours = Issue.where(:id => @query.issue_ids).collect(&:spent_hours).reject {|issue| issue.blank? }.sum ||0.0
+      elsif Redmine::VERSION::MAJOR == 2
+        estimated_points = Issue.where(:id => @query.issue_ids).to_a.sum { |i| i.story_points ? i.story_points.to_i : 0 } ||0
+        spent_hours = Issue.where(:id => @query.issue_ids).to_a.sum(&:estimated_hours ||0) ||0.0
+      else
+        estimated_points = 0
+        spent_hours = 0
+      end 
+%>
+<p class="other-formats">
+    <strong><%= t :label_agile_story_points %>:</strong> <%= estimated_points %>,
+    <strong><%= t :label_spent_time %>:</strong> <%= spent_hours.round(2) %>
+</p>
+<% end %>
+
+
